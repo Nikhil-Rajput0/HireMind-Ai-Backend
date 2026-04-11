@@ -1,0 +1,22 @@
+{
+  "name": "hirmind-ai-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "The backend which is designed for HireMind Ai website.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "Hiremind",
+    "Ai",
+    "backend"
+  ],
+  "author": "Nikhil Kumar Singh",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.4.1"
+  }
+}
