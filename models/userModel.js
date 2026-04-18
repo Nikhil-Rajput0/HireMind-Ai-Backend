@@ -11,14 +11,20 @@ const userSchema = new mongoose.Schema(
       minLength: [4, "A userName is greater than 4 character"],
       trim: true,
     },
+    credits: {
+      type: Number,
+      default: 50,
+    },
     role: {
       type: String,
       default: "user",
       enum: ["user", "admin"],
+      select: false,
     },
     isVerfied: {
       type: Boolean,
       default: true,
+      select: false,
     },
     email: {
       type: String,
@@ -48,7 +54,10 @@ const userSchema = new mongoose.Schema(
         message: "Please Enter the same password as above.",
       },
     },
-    profilePic: [String],
+    photo: {
+      type: String,
+      default: "",
+    },
     createdAt: {
       type: Date,
       default: Date.now(),
@@ -60,6 +69,12 @@ const userSchema = new mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
+
+userSchema.virtual("interviews", {
+  ref: "Interview",
+  foreignField: "user",
+  localField: "_id",
+});
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;

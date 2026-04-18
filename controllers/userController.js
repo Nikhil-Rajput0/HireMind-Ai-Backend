@@ -11,7 +11,7 @@ const filterObj = (obj, ...requiredFields) => {
 };
 
 export const getAllUsers = async (req, res, next) => {
-  const user = await User.find();
+  const user = await User.find().populate("interviews");
   res.status(200).json({
     status: "Success",
     results: user.length,
@@ -20,7 +20,7 @@ export const getAllUsers = async (req, res, next) => {
 };
 
 export const getMe = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).populate("interviews");
 
   if (!user) {
     return next(new AppError("There is no user found with these Id", 404));
@@ -37,16 +37,16 @@ export const updateMe = catchAsync(async (req, res, next) => {
     return next(new AppError("These route is not for password", 403));
   }
 
-  const filteredObject = filterObj(req.body, "name");
+  const filteredObject = filterObj(req.body, "name", "photo");
 
-  const updateUser = await User.findByIdAndUpdate(req.user.id, filteredObject, {
+  const user = await User.findByIdAndUpdate(req.user.id, filteredObject, {
     new: true,
     runValidators: true,
   }).select("-password");
 
   res.status(200).json({
     status: "success",
-    updateUser,
+    user,
     message: "Data has been changed.",
   });
 });

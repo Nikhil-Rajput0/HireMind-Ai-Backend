@@ -9,7 +9,11 @@ const interviewSchema = new mongoose.Schema(
         required: [true, "A interview must belongs to a user."],
       },
     ],
-    type: {
+    name: {
+      type: String,
+      default: "Test Interview",
+    },
+    interviewType: {
       type: String,
       enum: ["hr", "technical", "strict"],
       required: [true, "A interview must have a type like HR."],
@@ -40,7 +44,7 @@ const interviewSchema = new mongoose.Schema(
     },
     startedAt: {
       type: Date,
-      default: Date.now,
+      default: Date.now(),
     },
     completedAt: {
       type: Date,

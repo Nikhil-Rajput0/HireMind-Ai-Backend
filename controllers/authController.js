@@ -99,7 +99,7 @@ export const signUp = catchAsync(async (req, res, next) => {
     email,
     password,
     passwordConfirm,
-  });
+  }).select("-role");
 
   // ✅ 6. generate tokens
   const accessToken = generateAccessToken(newUser._id);
