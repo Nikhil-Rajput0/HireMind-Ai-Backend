@@ -2,57 +2,51 @@ import mongoose from "mongoose";
 
 const interviewSchema = new mongoose.Schema(
   {
-    user: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: [true, "A interview must belongs to a user."],
-      },
-    ],
-    name: {
-      type: String,
-      default: "Test Interview",
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
+
+    name: String,
+
     interviewType: {
       type: String,
       enum: ["hr", "technical", "strict"],
-      required: [true, "A interview must have a type like HR."],
+      required: true,
     },
+
+    role: String,
+    difficulty: String,
+
     conversation: [
       {
-        question: {
-          type: String,
-          required: [true, "Question is required"],
-        },
-        answer: {
-          type: String,
-          required: [true, "Answer is required"],
-        },
+        question: String,
+        answer: String,
+        feedback: String,
+        score: Number,
       },
     ],
+
     status: {
       type: String,
-      enum: ["pending", "completed", "failed"],
+      enum: ["pending", "completed"],
       default: "pending",
     },
-    score: {
-      type: Number,
-      default: 0,
-    },
-    feedback: {
-      type: String,
-    },
+
+    totalScore: Number,
+
+    overallFeedback: String,
+
     startedAt: {
       type: Date,
-      default: Date.now(),
+      default: Date.now,
     },
-    completedAt: {
-      type: Date,
-    },
+
+    completedAt: Date,
   },
   { timestamps: true },
 );
 
 const Interview = mongoose.model("Interview", interviewSchema);
-
 export default Interview;

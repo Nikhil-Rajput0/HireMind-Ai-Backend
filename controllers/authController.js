@@ -113,8 +113,16 @@ export const signUp = catchAsync(async (req, res, next) => {
   // ✅ 7. send response (ONLY ONCE)
   return res
     .status(201)
-    .cookie("accessToken", accessToken, { httpOnly: true, sameSite: "lax" })
-    .cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "lax" })
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
     .json({
       status: "Success",
       accessToken,
@@ -147,8 +155,16 @@ export const login = catchAsync(async (req, res, next) => {
 
   res
     .status(200)
-    .cookie("accessToken", accessToken, { httpOnly: true, sameSite: "lax" })
-    .cookie("refreshToken", refreshToken, { httpOnly: true, sameSite: "lax" })
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
     .json({
       status: "success",
       accessToken,
