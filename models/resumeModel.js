@@ -27,7 +27,7 @@ const resumeSchema = new mongoose.Schema(
     projects: [
       {
         title: String,
-        description: String,
+        description: [String],
         techStack: [String],
       },
     ],
