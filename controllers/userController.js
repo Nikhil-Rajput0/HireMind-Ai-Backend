@@ -20,7 +20,9 @@ export const getAllUsers = async (req, res, next) => {
 };
 
 export const getMe = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user.id).populate("interviews");
+  const user = await User.findById(req.user.id)
+    .populate("interviews")
+    .populate("resumes");
 
   if (!user) {
     return next(new AppError("There is no user found with these Id", 404));

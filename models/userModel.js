@@ -76,6 +76,12 @@ userSchema.virtual("interviews", {
   localField: "_id",
 });
 
+userSchema.virtual("resumes", {
+  ref: "Resume",
+  foreignField: "user",
+  localField: "_id",
+});
+
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 

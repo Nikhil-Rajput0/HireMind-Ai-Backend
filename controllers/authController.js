@@ -71,7 +71,7 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   // ✅ 1. check token exists
   if (!verifyToken) {
-    return next(new AppError("Verification token missing", 400));
+    return next(new AppError("Verification token missing", 401));
   }
 
   // ✅ 2. verify token safely

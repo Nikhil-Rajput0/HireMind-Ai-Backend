@@ -29,36 +29,80 @@ export const generateQuestion = catchAsync(async (req, res, next) => {
     }
 
     if (interview.interviewType === "technical") {
-      prompt = `You are a senior technical interviewer conducting a ${interview.difficulty} level technical interview for a ${interview.role} position.
+      prompt = `You are a professional technical interviewer conducting a ${interview.difficulty} level interview for a ${interview.role} position.
 
-              Your task: Ask ONE technical interview question that:
-              1. Tests core ${interview.role} skills and knowledge
-              2. Is appropriate for ${interview.difficulty} level candidates
-              3. Has a clear correct/incorrect answer path
-              4. Allows the candidate to demonstrate depth of knowledge
+            Your task: Ask ONE conceptual technical interview question.
 
-              ${interview.role === "MERN Stack" ? "Focus areas: MongoDB, Express.js, React.js, Node.js, REST APIs, JWT, Authentication, Database Design, State Management, Hooks, Middleware, Async Operations " : ""}
+            STRICT RULES:
+            - Do NOT ask the candidate to write code.
+            - Do NOT ask to build or implement anything.
+            - Do NOT say "write a program", "create schema", or "implement".
+            - ONLY ask explanation-based or concept-based questions.
 
-              ${interview.difficulty === "easy" ? "Ask fundamental concepts and basic implementation questions." : ""}
-              ${interview.difficulty === "medium" ? "Ask about best practices, optimization, and real-world scenarios." : ""}
-              ${interview.difficulty === "hardest" ? "Ask about system design, performance optimization, and architectural decisions." : ""}
+            The question should:
+            1. Test understanding of core ${interview.role} concepts
+            2. Be answerable verbally (like in a real interview)
+            3. Allow explanation, reasoning, and discussion
+            4. Be clear and specific
 
-              Format: Return ONLY the question, no explanations or prefixes.
-              Be specific and technical. Include a scenario if appropriate.`;
+            ${
+              interview.role === "MERN Stack"
+                ? `
+            Focus on topics like:
+            - React concepts (hooks, state, lifecycle)
+            - Node.js event loop
+            - Express middleware
+            - MongoDB relationships & indexing
+            - Authentication (JWT)
+            - API design & best practices
+            - Performance optimization
+            `
+                : ""
+            }
+
+            ${interview.difficulty === "easy" ? "Ask basic concept questions." : ""}
+            ${interview.difficulty === "medium" ? "Ask scenario-based or real-world questions." : ""}
+            ${interview.difficulty === "hardest" ? "Ask deep conceptual or architecture-level questions." : ""}
+
+            Format:
+            Return ONLY the question.
+            No explanation.
+            No code tasks.
+            Make it sound like a real interviewer speaking.`;
     }
 
     if (interview.interviewType === "strict") {
-      prompt = `You are a rigorous technical assessor conducting a ${interview.difficulty} level technical assessment for a ${interview.role} position.
+      prompt = `You are a strict and demanding technical interviewer assessing a ${interview.role} candidate at ${interview.difficulty} level.
 
-              Your task: Ask ONE challenging technical question that:
-              1. Tests deep understanding of ${interview.role} fundamentals
-              2. Requires critical thinking and problem-solving
-              3. Has specific, measurable evaluation criteria
-              4. Is appropriate for ${interview.difficulty} level
+                Your task: Ask ONE challenging conceptual question.
 
-              Include specific requirements or constraints in the question.
-              Format: Return ONLY the question, no explanations or prefixes.
-              Make it challenging but fair.`;
+                STRICT RULES:
+                - Do NOT ask to write code.
+                - Do NOT ask to implement anything.
+                - Do NOT give coding problems.
+                - ONLY ask deep explanation-based questions.
+
+                The question must:
+                1. Test deep understanding of ${interview.role}
+                2. Require critical thinking
+                3. Include a real-world scenario
+                4. Require reasoning, not coding
+
+                Examples of style:
+                - "Explain how..."
+                - "What would happen if..."
+                - "Why would you choose..."
+                - "How would you handle..."
+
+                ${interview.difficulty === "easy" ? "Keep it basic but still conceptual." : ""}
+                ${interview.difficulty === "medium" ? "Include real-world scenarios." : ""}
+                ${interview.difficulty === "hardest" ? "Focus on architecture, trade-offs, and edge cases." : ""}
+
+                Format:
+                Return ONLY the question.
+                No explanation.
+                No coding tasks.
+                Make it feel like a real strict interviewer.`;
     }
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",

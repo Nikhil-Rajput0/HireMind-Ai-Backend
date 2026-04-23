@@ -5,6 +5,7 @@ import globalErrorController from "./controllers/globalErrorHandler.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { interviewRouter } from "./routes/interviewRouter.js";
+import resumeRouter from "./routes/resumeRouter.js";
 
 const app = express();
 app.use(express.json());
@@ -23,6 +24,7 @@ app.use(cors(corsOptions));
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/interviews", interviewRouter);
+app.use("/api/v1/resume", resumeRouter);
 
 app.use((req, res, next) => {
   return next(new AppError(`Could not found this route`, 404));
