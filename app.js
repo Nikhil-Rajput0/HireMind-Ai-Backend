@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { interviewRouter } from "./routes/interviewRouter.js";
 import resumeRouter from "./routes/resumeRouter.js";
+import helmet from "helmet";
 
 const app = express();
 app.use(express.json());
@@ -14,13 +15,14 @@ app.use(cookieParser());
 app.use("/img/users", express.static("public/img/users"));
 
 const corsOptions = {
-  origin: "http://localhost:3000", // Your Next.js app's URL
+  origin: "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  credentials: true, // Allow cookies if needed
-  optionsSuccessStatus: 200, // Fix for legacy browsers like IE11
+  credentials: true,
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+app.use(helmet());
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/interviews", interviewRouter);

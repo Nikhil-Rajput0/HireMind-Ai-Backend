@@ -7,36 +7,49 @@ export const generateResume = catchAsync(async (req, res) => {
   const { resume } = req.body;
 
   const prompt = `
-              You are a professional resume writer.
+You are a professional resume writer.
 
-              Improve this resume:
+Improve this resume:
 
-              Name: ${resume.name}
-              Role: ${resume.role}
-              Skills: ${resume.skills}
-              Experience: ${JSON.stringify(resume.experience || "")}
-              Projects: ${JSON.stringify(resume.projects || "")}
+Name: ${resume.name}
+Role: ${resume.role}
+Skills: ${resume.skills}
+Experience: ${JSON.stringify(resume.experience || [])}
+Projects: ${JSON.stringify(resume.projects || [])}
 
-              IMPORTANT:
-              - Return ONLY valid JSON
-              - Do NOT include any explanation
-              - Do NOT include text before or after JSON
-              - Start response with { and end with }
+IMPORTANT:
+- Return ONLY valid JSON
+- Do NOT include any explanation
+- Start response with { and end with }
 
-              Make it:
-              - ATS optimized
-              - Professional
-              - Use bullet points
-              - Strong action verbs
+STRICT FORMAT:
+{
+  "summary": "string",
+  "skills": ["string"], 
+  "experience": [
+    {
+      "company": "string",
+      "title": "string",
+      "duration": "string",
+      "responsibilities": ["string"],
+      "achievements": ["string"]
+    }
+  ],
+  "projects": [
+    {
+      "title": "string",
+      "description": "string",
+      "techStack": ["string"]
+    }
+  ]
+}
 
-              Format:
-              {
-                "summary": "",
-                "skills": [],
-                "experience": [],
-                "projects": []
-              }
-              `;
+RULES:
+- skills MUST be flat array of strings
+- description MUST be string (NOT array)
+- responsibilities MUST be array
+- achievements MUST be array
+`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
@@ -48,29 +61,91 @@ export const generateResume = catchAsync(async (req, res) => {
   let parsed;
 
   try {
+    // 🔥 Extract JSON safely
     const jsonStart = aiText.indexOf("{");
     const jsonEnd = aiText.lastIndexOf("}") + 1;
-
     const cleanJSON = aiText.slice(jsonStart, jsonEnd);
 
     parsed = JSON.parse(cleanJSON);
-    if (typeof parsed.skills === "object") {
-      parsed.skills = Object.values(parsed.skills).flat();
+
+    // =========================
+    // 🔥 SKILLS CLEANING
+    // =========================
+    let skills = parsed.skills;
+
+    if (typeof skills === "string") {
+      try {
+        skills = JSON.parse(skills);
+      } catch {
+        skills = skills.split(/,|\n/);
+      }
     }
-    parsed.experience = parsed.experience.map((exp) => ({
+
+    let flatSkills = [];
+
+    if (Array.isArray(skills)) {
+      skills.forEach((item) => {
+        if (typeof item === "string") {
+          flatSkills.push(item.trim());
+        } else if (item?.skills) {
+          flatSkills.push(...item.skills);
+        }
+      });
+    } else if (typeof skills === "object") {
+      Object.values(skills).forEach((val) => {
+        if (Array.isArray(val)) flatSkills.push(...val);
+      });
+    }
+
+    parsed.skills = flatSkills.map((s) => String(s).trim());
+
+    // =========================
+    // 🔥 EXPERIENCE CLEANING
+    // =========================
+    parsed.experience = (parsed.experience || []).map((exp) => ({
       company: exp.company || "",
       title: exp.title || exp.role || "",
       duration: exp.duration || "",
-      responsibilities: exp.responsibilities || [],
-      achievements: exp.achievements || [],
+      responsibilities: Array.isArray(exp.responsibilities)
+        ? exp.responsibilities
+        : exp.responsibilities
+          ? [exp.responsibilities]
+          : [],
+      achievements: Array.isArray(exp.achievements)
+        ? exp.achievements
+        : exp.achievements
+          ? [exp.achievements]
+          : [],
     }));
-    parsed.projects = parsed.projects.map((proj) => ({
-      title: proj.title || proj["Project Name"] || "",
-      description: proj.description || proj["Description"] || "",
-      techStack: proj.techStack || proj["Technologies Used"] || [],
-    }));
+
+    // =========================
+    // 🔥 PROJECTS CLEANING
+    // =========================
+    parsed.projects = (parsed.projects || []).map((proj) => {
+      let description = proj.description || proj["Description"] || "";
+
+      // 🔥 FIX: description must be string
+      if (Array.isArray(description)) {
+        description = description.join(" ");
+      }
+
+      return {
+        title: proj.title || proj["Project Name"] || "",
+        description: String(description),
+        techStack: Array.isArray(proj.techStack)
+          ? proj.techStack
+          : proj["Technologies Used"]
+            ? proj["Technologies Used"]
+            : [],
+      };
+    });
+
+    // =========================
+    // 🔥 SUMMARY SAFETY
+    // =========================
+    parsed.summary = typeof parsed.summary === "string" ? parsed.summary : "";
   } catch (err) {
-    console.log("JSON Parse Error:", aiText);
+    console.log("❌ JSON Parse Error:", aiText);
 
     return res.status(500).json({
       message: "AI returned invalid format",

@@ -242,17 +242,17 @@ export const finishInterview = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: "Thanks for visitng😇", interview });
 });
 
-export const getInterviewById = catchAsync(async (req, res) => {
+export const getInterviewById = catchAsync(async (req, res, next) => {
   const interview = await Interview.findById(req.params.id);
 
   if (!interview) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Interview not found",
-    });
+    return next(new AppError("There is no interviw with these Id", 400));
   }
 
-  res.status(200).json(interview);
+  res.status(200).json({
+    status: "success",
+    data: interview,
+  });
 });
 
 export const deleteOneInterview = catchAsync(async (req, res, next) => {
