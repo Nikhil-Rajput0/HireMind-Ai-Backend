@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use("/img/users", express.static("public/img/users"));
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://hiremind-ai-org.vercel.app/",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
   optionsSuccessStatus: 200,

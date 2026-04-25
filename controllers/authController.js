@@ -115,12 +115,14 @@ export const signUp = catchAsync(async (req, res, next) => {
     .status(201)
     .cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 15 * 60 * 1000,
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({
@@ -157,12 +159,14 @@ export const login = catchAsync(async (req, res, next) => {
     .status(200)
     .cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 15 * 60 * 1000,
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json({

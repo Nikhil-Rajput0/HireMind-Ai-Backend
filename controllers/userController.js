@@ -86,12 +86,14 @@ export const logout = catchAsync(async (req, res, next) => {
     .status(200)
     .cookie("accessToken", "Loggedout", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 2 * 1000,
     })
     .cookie("refreshToken", "Loggedout", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 2 * 1000,
     })
     .json({
