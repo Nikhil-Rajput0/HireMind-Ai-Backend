@@ -1,5 +1,11 @@
 import express from "express";
-import { getAllUsers, getMe, updateMe } from "../controllers/userController.js";
+import {
+  getAllUsers,
+  getMe,
+  logout,
+  updateCredits,
+  updateMe,
+} from "../controllers/userController.js";
 import {
   forgetPassword,
   login,
@@ -29,7 +35,10 @@ userRouter.patch(
   uploadUserPhotoToCloud,
   updateMe,
 );
+
+userRouter.patch("/updateCredits", protect, updateCredits);
 userRouter.patch("/updatePassword", protect, updatePassword);
 userRouter.get("/getMe", protect, getMe);
+userRouter.patch("/logout", protect, logout);
 
 export default userRouter;

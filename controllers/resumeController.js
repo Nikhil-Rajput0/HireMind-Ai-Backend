@@ -141,7 +141,7 @@ RULES:
     });
 
     // =========================
-    // 🔥 SUMMARY SAFETY
+    //   SUMMARY SAFETY
     // =========================
     parsed.summary = typeof parsed.summary === "string" ? parsed.summary : "";
   } catch (err) {

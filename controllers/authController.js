@@ -69,12 +69,12 @@ export const verifyOtp = catchAsync(async (req, res, next) => {
 export const signUp = catchAsync(async (req, res, next) => {
   const { name, email, password, passwordConfirm, verifyToken } = req.body;
 
-  // ✅ 1. check token exists
+  //  1. check token exists
   if (!verifyToken) {
     return next(new AppError("Verification token missing", 401));
   }
 
-  // ✅ 2. verify token safely
+  //  2. verify token safely
   let decoded;
   try {
     decoded = await promisify(jwt.verify)(verifyToken, process.env.JWT_SECRET);
@@ -82,24 +82,24 @@ export const signUp = catchAsync(async (req, res, next) => {
     return next(new AppError("Invalid or expired token", 401));
   }
 
-  // ✅ 3. match email
+  //  3. match email
   if (decoded.email.trim() !== email.trim()) {
     return next(new AppError("You are not verified.", 401));
   }
 
-  // ✅ 4. check existing user
+  //  4. check existing user
   const alreadyExist = await User.findOne({ email });
   if (alreadyExist) {
     return next(new AppError("User already exists, please login instead", 400));
   }
 
-  // ✅ 5. create user
+  //  5. create user
   const newUser = await User.create({
     name,
     email,
     password,
     passwordConfirm,
-  }).select("-role");
+  });
 
   // ✅ 6. generate tokens
   const accessToken = generateAccessToken(newUser._id);
