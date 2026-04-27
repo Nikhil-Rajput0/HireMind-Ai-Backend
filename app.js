@@ -7,7 +7,7 @@ import cors from "cors";
 import { interviewRouter } from "./routes/interviewRouter.js";
 import resumeRouter from "./routes/resumeRouter.js";
 import helmet from "helmet";
-import ExpressMongoSanitize from "express-mongo-sanitize";
+import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
@@ -33,9 +33,14 @@ const limiter = rateLimit({
 
 app.use(cors(corsOptions));
 app.use(helmet());
-app.use(ExpressMongoSanitize());
+app.use(
+  mongoSanitize({
+    replaceWith: "_",
+    allowDots: true,
+  }),
+);
 app.use(hpp());
-app.use("/api/v1/users/resetPassword/:token", limiter);
+app.use("/api/v1/users/resetPassword/", limiter);
 app.use(compression());
 
 app.use("/api/v1/users", userRouter);
