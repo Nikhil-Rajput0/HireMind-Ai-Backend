@@ -125,7 +125,6 @@ export const signUp = catchAsync(async (req, res, next) => {
       secure: true,
       maxAge: 15 * 60 * 1000,
       path: "/",
-      domain: ".hiremind-ai-org.vercel.app",
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -133,7 +132,6 @@ export const signUp = catchAsync(async (req, res, next) => {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: ".hiremind-ai-org.vercel.app",
     })
     .json({
       status: "Success",
@@ -173,7 +171,7 @@ export const login = catchAsync(async (req, res, next) => {
       sameSite: "none",
       secure: true,
       path: "/",
-      domain: ".hiremind-ai-org.vercel.app",
+
       maxAge: 15 * 60 * 1000,
     })
     .cookie("refreshToken", refreshToken, {
@@ -182,7 +180,6 @@ export const login = catchAsync(async (req, res, next) => {
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
-      domain: ".hiremind-ai-org.vercel.app",
     })
     .json({
       status: "success",
