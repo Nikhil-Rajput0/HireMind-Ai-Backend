@@ -6,6 +6,12 @@ import generateOtp from "../utils/generateOtp.js";
 import redis from "../config/redis.js";
 import sendOTP from "../utils/sendMail.js";
 import { promisify } from "util";
+import { z } from "zod";
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
 
 const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -136,7 +142,8 @@ export const signUp = catchAsync(async (req, res, next) => {
 });
 
 export const login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
+  const validated = loginSchema.parse(req.body);
+  const { email, password } = validated;
 
   if (!email && !password) {
     return next(
