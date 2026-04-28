@@ -96,6 +96,12 @@ export const logout = catchAsync(async (req, res, next) => {
       secure: true,
       maxAge: 2 * 1000,
     })
+    .cookie("isLoggedIn", "false", {
+      httpOnly: false,
+      sameSite: "none",
+      secure: true,
+      maxAge: 2 * 1000,
+    })
     .json({
       status: "success",
       message: "User Logged out",

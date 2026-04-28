@@ -107,7 +107,7 @@ export const signUp = catchAsync(async (req, res, next) => {
     passwordConfirm,
   });
 
-  // ✅ 6. generate tokens
+  // 6. generate tokens
   const accessToken = generateAccessToken(newUser._id);
   const refreshToken = generateRefreahToken(newUser._id);
 
@@ -116,7 +116,7 @@ export const signUp = catchAsync(async (req, res, next) => {
 
   newUser.password = undefined;
 
-  // ✅ 7. send response (ONLY ONCE)
+  // 7. send response (ONLY ONCE)
   return res
     .status(201)
     .cookie("accessToken", accessToken, {
@@ -128,6 +128,13 @@ export const signUp = catchAsync(async (req, res, next) => {
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    })
+    .cookie("isLoggedIn", "true", {
+      httpOnly: false,
       sameSite: "none",
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -176,6 +183,13 @@ export const login = catchAsync(async (req, res, next) => {
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
+    })
+    .cookie("isLoggedIn", "true", {
+      httpOnly: false,
       sameSite: "none",
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
