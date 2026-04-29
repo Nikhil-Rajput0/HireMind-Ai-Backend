@@ -30,6 +30,16 @@ const limiter = rateLimit({
   message: "Too many request. Please wait for 5 minutes.",
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Server is running..",
+    uptime: process.uptime(),
+    memory: process.memoryUsage().heapUsed,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use(cors(corsOptions));
 app.use(helmet());
 app.use(hpp());
