@@ -36,6 +36,12 @@ app.use(hpp());
 app.use("/api/v1/users/resetPassword/", limiter);
 app.use(compression());
 
+app.use("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Welcome to hiremind ai backend",
+  });
+});
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/interviews", interviewRouter);
 app.use("/api/v1/resume", resumeRouter);
