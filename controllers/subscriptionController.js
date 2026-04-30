@@ -5,7 +5,7 @@ import Plan from "../models/subscriptionModel.js";
 export const getSubscription = catchAsync(async (req, res, next) => {
   const plans = await Plan.find();
 
-  if (!plan) {
+  if (!plans) {
     return next(new AppError("There is no plan in databse", 404));
   }
 
