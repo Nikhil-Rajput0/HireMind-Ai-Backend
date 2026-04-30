@@ -7,6 +7,7 @@ export const getSupport = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "Success",
+    results: allSupport.length,
     message: "Fetching Support Success",
     support: allSupport,
   });
