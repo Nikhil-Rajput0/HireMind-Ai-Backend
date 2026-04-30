@@ -10,6 +10,7 @@ import helmet from "helmet";
 import hpp from "hpp";
 import rateLimit from "express-rate-limit";
 import compression from "compression";
+import supportRouter from "./routes/supportRouter.js";
 
 const app = express();
 app.use(express.json({ limit: "10kb" }));
@@ -49,6 +50,7 @@ app.use(compression());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/interviews", interviewRouter);
 app.use("/api/v1/resume", resumeRouter);
+app.use("/api/v1/supports", supportRouter);
 
 app.use((req, res, next) => {
   return next(new AppError(`Could not found this route`, 404));

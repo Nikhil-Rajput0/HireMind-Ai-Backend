@@ -188,13 +188,6 @@ export const login = catchAsync(async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     })
-    .cookie("isLoggedIn", "true", {
-      httpOnly: false,
-      sameSite: "none",
-      secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-    })
     .json({
       status: "success",
       accessToken,
