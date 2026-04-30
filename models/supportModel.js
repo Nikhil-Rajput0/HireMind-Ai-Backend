@@ -18,7 +18,7 @@ const supportSchema = new mongoose.Schema(
     },
 
     phone: {
-      type: Number,
+      type: String,
       required: [true, "Your number is required"],
       trim: true,
       max: [12, "A number is only 12 numbers long."],

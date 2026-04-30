@@ -15,10 +15,6 @@ export const getSupport = catchAsync(async (req, res, next) => {
 export const createSupport = catchAsync(async (req, res, next) => {
   const { name, email, phone, message } = req.body;
 
-  if (!name && !email && !phone && !message) {
-    return next(new AppError("All Fields are required", 400));
-  }
-
   const newSupport = await Support.create({
     name,
     email,
