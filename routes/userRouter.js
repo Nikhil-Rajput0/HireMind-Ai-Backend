@@ -21,7 +21,6 @@ import { uploadUserPhotoToCloud } from "../middleware/cloudinaryUpload.js";
 
 const userRouter = express.Router();
 
-userRouter.get("/allUsers", getAllUsers);
 userRouter.route("/sendOtp").post(sendOtp);
 userRouter.route("/verifyOtp").post(verifyOtp);
 userRouter.route("/signUp").post(signUp);
