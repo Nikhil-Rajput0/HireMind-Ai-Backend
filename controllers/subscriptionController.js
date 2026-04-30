@@ -16,22 +16,22 @@ export const getSubscription = catchAsync(async (req, res, next) => {
   });
 });
 
-export const createSubscription = catchAsync(async (req, res, next) => {
-  const { type, planType, priceDollar, price, quantity, btnText, isPopular } =
-    req.body;
+// export const createSubscription = catchAsync(async (req, res, next) => {
+//   const { type, planType, priceDollar, price, quantity, btnText, isPopular } =
+//     req.body;
 
-  const newPlan = await Plan.create({
-    type,
-    planType,
-    priceDollar,
-    price,
-    quantity,
-    btnText,
-    isPopular,
-  });
+//   const newPlan = await Plan.create({
+//     type,
+//     planType,
+//     priceDollar,
+//     price,
+//     quantity,
+//     btnText,
+//     isPopular,
+//   });
 
-  res.status(201).json({
-    status: "Success",
-    plan: newPlan,
-  });
-});
+//   res.status(201).json({
+//     status: "Success",
+//     plan: newPlan,
+//   });
+// });
