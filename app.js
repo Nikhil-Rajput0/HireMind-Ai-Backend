@@ -52,7 +52,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/interviews", interviewRouter);
 app.use("/api/v1/resume", resumeRouter);
 app.use("/api/v1/supports", supportRouter);
-app.use("/api/v1/plan", planRouter);
+app.use("/api/v1/plans", planRouter);
 
 app.use((req, res, next) => {
   return next(new AppError(`Could not found this route`, 404));
