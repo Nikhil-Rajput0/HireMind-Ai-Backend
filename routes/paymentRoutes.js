@@ -9,11 +9,9 @@ import { protect } from "../controllers/authController.js";
 
 const paymentRouter = express.Router();
 
-paymentRouter.use(protect);
-
-paymentRouter.post("/create-order", createOrder);
+paymentRouter.post("/create-order", protect, createOrder);
 paymentRouter.post("/verify-payment", verifyPayment);
-paymentRouter.get("/current-plan", getCurrentPlan);
-paymentRouter.get("/history", getPaymentHistory);
+paymentRouter.get("/current-plan", protect, getCurrentPlan);
+paymentRouter.get("/history", protect, getPaymentHistory);
 
 export default paymentRouter;

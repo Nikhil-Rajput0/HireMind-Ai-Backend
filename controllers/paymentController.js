@@ -47,6 +47,11 @@ export const verifyPayment = catchAsync(async (req, res, next) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } =
     req.body;
 
+  console.log("=== VERIFY PAYMENT ===");
+  console.log("Order ID:", razorpay_order_id);
+  console.log("Payment ID:", razorpay_payment_id);
+  console.log("Plan ID:", planId);
+
   // 1. Verify signature
   const sign = razorpay_order_id + "|" + razorpay_payment_id;
   const expectedSign = crypto
@@ -54,19 +59,37 @@ export const verifyPayment = catchAsync(async (req, res, next) => {
     .update(sign.toString())
     .digest("hex");
 
+  console.log("Signature valid:", razorpay_signature === expectedSign);
+
   if (razorpay_signature !== expectedSign) {
     return next(new AppError("Invalid payment signature", 400));
   }
 
-  // 2. Get plan and user
+  // 2. Fetch order details from Razorpay to get user ID
+  const order = await razorpay.orders.fetch(razorpay_order_id);
+  const userId = order.notes.userId;
+
+  console.log("User ID from order:", userId);
+
+  if (!userId) {
+    return next(new AppError("User ID not found in order", 400));
+  }
+
+  // 3. Get plan and user
   const plan = await Plan.findById(planId);
   if (!plan) {
     return next(new AppError("Plan not found", 404));
   }
 
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError("User not found", 404));
+  }
 
-  // 3. Add to payment history
+  console.log("Plan:", plan.type, plan.planType);
+  console.log("User:", user.email);
+
+  // 4. Add to payment history
   user.paymentHistory.push({
     planId: plan._id,
     planName: plan.type,
@@ -76,19 +99,17 @@ export const verifyPayment = catchAsync(async (req, res, next) => {
     orderId: razorpay_order_id,
   });
 
-  // 4. Handle based on plan type
+  // 5. Handle based on plan type
   let message = "";
 
   switch (plan.planType) {
     case "credits":
-      // Extract number from quantity string (e.g., "100 credits" -> 100)
       const creditAmount = parseInt(plan.quantity.match(/\d+/)[0]);
       user.credits += creditAmount;
       message = `✅ Successfully added ${creditAmount} credits! Total credits: ${user.credits}`;
       break;
 
     case "subscription":
-      // Calculate expiry based on plan name
       const now = new Date();
       let expiryDate;
 
@@ -111,8 +132,7 @@ export const verifyPayment = catchAsync(async (req, res, next) => {
         orderId: razorpay_order_id,
       };
 
-      // Set unlimited credits
-      user.credits = 999999;
+      user.credits = 999999; // Unlimited during subscription
       message = `🎉 ${plan.type} subscription activated! Valid till ${expiryDate.toLocaleDateString()}`;
       break;
 
@@ -138,10 +158,12 @@ export const verifyPayment = catchAsync(async (req, res, next) => {
       return next(new AppError("Invalid plan type", 400));
   }
 
-  // 5. Save user
+  // 6. Save user
   await user.save({ validateBeforeSave: false });
 
-  // 6. Send response
+  console.log("✅ Payment verified and user updated");
+
+  // 7. Send success response
   res.status(200).json({
     status: "success",
     message,
