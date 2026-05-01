@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use("/img/users", express.static("public/img/users"));
 
 const corsOptions = {
-  origin: "https://hiremind-ai-org.vercel.app",
+  origin: ["https://hiremind-ai-org.vercel.app", "https://api.razorpay.com"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
   optionsSuccessStatus: 200,
