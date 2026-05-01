@@ -16,22 +16,27 @@ export const getSubscription = catchAsync(async (req, res, next) => {
   });
 });
 
-// export const createSubscription = catchAsync(async (req, res, next) => {
-//   const { type, planType, priceDollar, price, quantity, btnText, isPopular } =
-//     req.body;
+export const createSubscription = catchAsync(async (req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    message: "You are not allowed to perform these action.",
+  });
 
-//   const newPlan = await Plan.create({
-//     type,
-//     planType,
-//     priceDollar,
-//     price,
-//     quantity,
-//     btnText,
-//     isPopular,
-//   });
+  // const { type, planType, priceDollar, price, quantity, btnText, isPopular } =
+  //   req.body;
 
-//   res.status(201).json({
-//     status: "Success",
-//     plan: newPlan,
-//   });
-// });
+  // const newPlan = await Plan.create({
+  //   type,
+  //   planType,
+  //   priceDollar,
+  //   price,
+  //   quantity,
+  //   btnText,
+  //   isPopular,
+  // });
+
+  // res.status(201).json({
+  //   status: "Success",
+  //   plan: newPlan,
+  // });
+});
