@@ -1,4 +1,6 @@
+// controllers/interviewController.js
 import Interview from "../models/interviewModel.js";
+import User from "../models/userModel.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
 import groq from "../utils/groq.js";
@@ -173,8 +175,39 @@ export const getAllInterviews = catchAsync(async (req, res, next) => {
   });
 });
 
+// UPDATED: createInterview with credit check
 export const createInterview = catchAsync(async (req, res, next) => {
   if (!req.body.user) req.body.user = req.user.id;
+
+  // Get user with fresh data
+  const user = await User.findById(req.user.id);
+
+  // Check subscription status
+  await user.checkSubscriptionStatus();
+
+  // Check if user has access
+  if (!user.hasAccess()) {
+    return next(
+      new AppError(
+        "No credits or active subscription. Please purchase credits or subscribe to continue.",
+        402,
+      ),
+    );
+  }
+
+  // Try to deduct credits
+  const deducted = await user.deductCredits(20);
+
+  if (!deducted) {
+    return next(
+      new AppError(
+        `Insufficient credits. You have ${user.credits} credits but need 20.`,
+        402,
+      ),
+    );
+  }
+
+  // Create interview
   const interview = await Interview.create({
     user: req.body.user,
     name: req.body.name,
@@ -183,11 +216,18 @@ export const createInterview = catchAsync(async (req, res, next) => {
     difficulty: req.body.difficulty,
   });
 
+  // Get updated user
+  const updatedUser = await User.findById(req.user.id);
+
   res.status(201).json({
     status: "success",
-    message: "Interview started successfully ⭐",
+    message:
+      updatedUser.isLifetime || updatedUser.subscription?.isActive
+        ? "Interview started (Subscription Active) ⭐"
+        : `Interview started successfully ⭐ (${updatedUser.credits} credits remaining)`,
     data: {
       interview,
+      credits: updatedUser.credits,
     },
   });
 });
@@ -196,6 +236,10 @@ export const saveAnswer = catchAsync(async (req, res, next) => {
   const { interviewId, question, answer, feedback, score } = req.body;
 
   const interview = await Interview.findById(interviewId);
+
+  if (!interview) {
+    return next(new AppError("Interview not found", 404));
+  }
 
   interview.conversation.push({
     question,
@@ -206,7 +250,7 @@ export const saveAnswer = catchAsync(async (req, res, next) => {
 
   await interview.save();
 
-  res.json({ message: "Saved" });
+  res.json({ message: "Answer saved successfully" });
 });
 
 export const finishInterview = catchAsync(async (req, res, next) => {
@@ -214,7 +258,7 @@ export const finishInterview = catchAsync(async (req, res, next) => {
 
   const interview = await Interview.findById(interviewId);
   if (!interview) {
-    return next(new AppError("There is no user with these id."));
+    return next(new AppError("There is no interview with this ID.", 404));
   }
 
   const conversation = interview.conversation || [];
@@ -239,14 +283,14 @@ export const finishInterview = catchAsync(async (req, res, next) => {
 
   await interview.save();
 
-  res.status(200).json({ message: "Thanks for visitng😇", interview });
+  res.status(200).json({ message: "Thanks for visiting 😇", interview });
 });
 
 export const getInterviewById = catchAsync(async (req, res, next) => {
   const interview = await Interview.findById(req.params.id);
 
   if (!interview) {
-    return next(new AppError("There is no interviw with these Id", 400));
+    return next(new AppError("There is no interview with this ID", 400));
   }
 
   res.status(200).json({

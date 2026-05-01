@@ -1,10 +1,32 @@
 import Resume from "../models/resumeModel.js";
+import User from "../models/userModel.js";
 import groq from "../utils/groq.js";
 import { calculateATSScore } from "../utils/atsScore.js";
 import catchAsync from "../utils/catchAsync.js";
+import AppError from "../utils/appError.js";
 
 export const generateResume = catchAsync(async (req, res) => {
   const { resume } = req.body;
+
+  // Check user access
+  const user = await User.findById(req.user.id);
+  await user.checkSubscriptionStatus();
+
+  if (!user.hasAccess()) {
+    return res.status(402).json({
+      message:
+        "No credits or active subscription. Please purchase credits or subscribe.",
+    });
+  }
+
+  // Try to deduct credits
+  const deducted = await user.deductCredits(20);
+
+  if (!deducted) {
+    return res.status(402).json({
+      message: `Insufficient credits. You need 20 credits but have ${user.credits}.`,
+    });
+  }
 
   const prompt = `
 You are a professional resume writer.
@@ -61,16 +83,12 @@ RULES:
   let parsed;
 
   try {
-    // 🔥 Extract JSON safely
     const jsonStart = aiText.indexOf("{");
     const jsonEnd = aiText.lastIndexOf("}") + 1;
     const cleanJSON = aiText.slice(jsonStart, jsonEnd);
 
     parsed = JSON.parse(cleanJSON);
 
-    // =========================
-    // 🔥 SKILLS CLEANING
-    // =========================
     let skills = parsed.skills;
 
     if (typeof skills === "string") {
@@ -99,9 +117,6 @@ RULES:
 
     parsed.skills = flatSkills.map((s) => String(s).trim());
 
-    // =========================
-    // 🔥 EXPERIENCE CLEANING
-    // =========================
     parsed.experience = (parsed.experience || []).map((exp) => ({
       company: exp.company || "",
       title: exp.title || exp.role || "",
@@ -118,13 +133,9 @@ RULES:
           : [],
     }));
 
-    // =========================
-    // 🔥 PROJECTS CLEANING
-    // =========================
     parsed.projects = (parsed.projects || []).map((proj) => {
       let description = proj.description || proj["Description"] || "";
 
-      // 🔥 FIX: description must be string
       if (Array.isArray(description)) {
         description = description.join(" ");
       }
@@ -140,22 +151,32 @@ RULES:
       };
     });
 
-    // =========================
-    //   SUMMARY SAFETY
-    // =========================
     parsed.summary = typeof parsed.summary === "string" ? parsed.summary : "";
   } catch (err) {
     console.log("❌ JSON Parse Error:", aiText);
+
+    // Refund credits on error
+    user.credits += 20;
+    await user.save({ validateBeforeSave: false });
 
     return res.status(500).json({
       message: "AI returned invalid format",
     });
   }
 
+  // Get updated user
+  const updatedUser = await User.findById(req.user.id);
+
   res.status(200).json({
     success: true,
-    data: parsed,
-    message: "Resume Improved",
+    data: {
+      ...parsed,
+      credits: updatedUser.credits,
+    },
+    message:
+      updatedUser.isLifetime || updatedUser.subscription?.isActive
+        ? "Resume improved (Subscription)"
+        : `Resume improved (${updatedUser.credits} credits remaining)`,
   });
 });
 
@@ -174,7 +195,7 @@ export const saveResume = catchAsync(async (req, res) => {
   res.status(201).json({
     success: true,
     resume,
-    message: "Data saved successfully on database.",
+    message: "Resume saved successfully to database.",
   });
 });
 
@@ -192,6 +213,6 @@ export const deleteResume = catchAsync(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Deleted",
+    message: "Resume deleted successfully",
   });
 });

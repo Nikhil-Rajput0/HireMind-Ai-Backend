@@ -1,3 +1,4 @@
+// models/userModel.js
 import mongoose from "mongoose";
 import validator from "validator";
 import bcrypt from "bcrypt";
@@ -65,6 +66,49 @@ const userSchema = new mongoose.Schema(
     changedPasswordAt: Date,
     resetPasswordToken: String,
     resetTokenExpires: Date,
+
+    subscription: {
+      plan: {
+        type: mongoose.Schema.ObjectId,
+        ref: "Plan",
+      },
+      planName: {
+        type: String,
+      },
+      planType: {
+        type: String,
+        enum: ["subscription", "lifetime"],
+      },
+      startDate: Date,
+      expiryDate: Date,
+      isActive: {
+        type: Boolean,
+        default: false,
+      },
+      paymentId: String,
+      orderId: String,
+    },
+    isLifetime: {
+      type: Boolean,
+      default: false,
+    },
+    paymentHistory: [
+      {
+        planId: {
+          type: mongoose.Schema.ObjectId,
+          ref: "Plan",
+        },
+        planName: String,
+        planType: String,
+        amount: Number,
+        paymentId: String,
+        orderId: String,
+        purchasedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } },
 );
@@ -116,6 +160,72 @@ userSchema.methods.changedPasswordtoken = async function () {
   this.resetTokenExpires = Date.now() + 5 * 60 * 1000;
 
   return resetToken;
+};
+
+// NEW METHODS
+
+// Check if user has any access
+userSchema.methods.hasAccess = function () {
+  // Lifetime access
+  if (this.isLifetime) return true;
+
+  // Active subscription
+  if (
+    this.subscription?.isActive &&
+    this.subscription?.expiryDate &&
+    new Date(this.subscription.expiryDate) > new Date()
+  ) {
+    return true;
+  }
+
+  // Has credits
+  if (this.credits > 0) return true;
+
+  return false;
+};
+
+// Check and update subscription status
+userSchema.methods.checkSubscriptionStatus = async function () {
+  if (
+    this.subscription?.expiryDate &&
+    new Date(this.subscription.expiryDate) < new Date()
+  ) {
+    this.subscription.isActive = false;
+    // If had unlimited credits from subscription, reset
+    if (this.credits > 1000) {
+      this.credits = 0;
+    }
+    await this.save({ validateBeforeSave: false });
+    return false;
+  }
+  return this.subscription?.isActive || false;
+};
+
+// Deduct credits
+userSchema.methods.deductCredits = async function (amount = 20) {
+  // If lifetime, always allow
+  if (this.isLifetime) return true;
+
+  // If active subscription, don't deduct
+  if (
+    this.subscription?.isActive &&
+    this.subscription?.expiryDate &&
+    new Date(this.subscription.expiryDate) > new Date()
+  ) {
+    return true;
+  }
+
+  // Check if subscription expired
+  await this.checkSubscriptionStatus();
+
+  // Deduct from credits
+  if (this.credits >= amount) {
+    this.credits -= amount;
+    await this.save({ validateBeforeSave: false });
+    return true;
+  }
+
+  return false;
 };
 
 const User = mongoose.model("User", userSchema);

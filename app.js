@@ -12,6 +12,7 @@ import rateLimit from "express-rate-limit";
 import compression from "compression";
 import supportRouter from "./routes/supportRouter.js";
 import planRouter from "./routes/subscriptionRouter.js";
+import paymentRouter from "./routes/paymentRoutes.js";
 
 const app = express();
 app.use(express.json({ limit: "10kb" }));
@@ -53,6 +54,7 @@ app.use("/api/v1/interviews", interviewRouter);
 app.use("/api/v1/resume", resumeRouter);
 app.use("/api/v1/supports", supportRouter);
 app.use("/api/v1/plans", planRouter);
+app.use("/api/v1/payments", paymentRouter);
 
 app.use((req, res, next) => {
   return next(new AppError(`Could not found this route`, 404));
