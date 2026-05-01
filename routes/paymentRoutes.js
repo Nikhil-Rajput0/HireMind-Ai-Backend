@@ -1,7 +1,6 @@
 import express from "express";
 import {
   createOrder,
-  verifyPayment,
   getCurrentPlan,
   getPaymentHistory,
 } from "../controllers/paymentController.js";
@@ -18,6 +17,6 @@ paymentRouter.post("/webhook", handleRazorpayWebhook);
 paymentRouter.post("/create-order", protect, createOrder);
 paymentRouter.get("/current-plan", protect, getCurrentPlan);
 paymentRouter.get("/history", protect, getPaymentHistory);
-router.post("/manual-sync", protect, manualSync);
+paymentRouter.post("/manual-sync", protect, manualSync);
 
 export default paymentRouter;
