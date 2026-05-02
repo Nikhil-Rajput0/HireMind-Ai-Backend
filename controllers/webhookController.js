@@ -3,23 +3,19 @@ import razorpay from "../config/razorpay.js";
 import Plan from "../models/subscriptionModel.js";
 import User from "../models/userModel.js";
 import catchAsync from "../utils/catchAsync.js";
+import AppError from "../utils/appError.js";
 
-export const handleRazorpayWebhook = catchAsync(async (req, res) => {
-  console.log("=== WEBHOOK RECEIVED ===");
-  console.log("Event:", req.body.event);
-
+export const handleRazorpayWebhook = catchAsync(async (req, res, next) => {
   // 1. Verify webhook signature
   const signature = req.headers["x-razorpay-signature"];
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
   if (!signature) {
-    console.error("❌ No signature in webhook");
-    return res.status(400).json({ error: "No signature" });
+    return next(new AppError("No signature", 400));
   }
 
   if (!webhookSecret) {
-    console.error("❌ Webhook secret not configured");
-    return res.status(500).json({ error: "Webhook not configured" });
+    return next(new AppError("Webhook not configured", 400));
   }
 
   // Verify the signature
@@ -29,11 +25,8 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
     .update(body)
     .digest("hex");
 
-  console.log("Signature valid:", signature === expectedSignature);
-
   if (signature !== expectedSignature) {
-    console.error("❌ Invalid webhook signature");
-    return res.status(400).json({ error: "Invalid signature" });
+    return next(new AppError("Invalid signature", 400));
   }
 
   // 2. Process the event
@@ -46,14 +39,6 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
   if (event === "payment.captured") {
     try {
       const paymentEntity = req.body.payload.payment.entity;
-
-      console.log("=== PAYMENT DETAILS ===");
-      console.log("Payment ID:", paymentEntity.id);
-      console.log("Order ID:", paymentEntity.order_id);
-      console.log("Amount:", paymentEntity.amount);
-      console.log("Status:", paymentEntity.status);
-      console.log("Notes:", paymentEntity.notes);
-
       const orderId = paymentEntity.order_id;
       const paymentId = paymentEntity.id;
 
@@ -64,30 +49,22 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
       const userId = order.notes?.userId;
       const planId = order.notes?.planId;
 
-      console.log("User ID from notes:", userId);
-      console.log("Plan ID from notes:", planId);
-
       if (!userId || !planId) {
-        console.error("❌ Missing userId or planId in order notes");
-        console.log("Order notes:", order.notes);
-        return;
+        return next(
+          new AppError("❌ Missing userId or planId in order notes", 401),
+        );
       }
 
       // Find plan and user
       const plan = await Plan.findById(planId);
       if (!plan) {
-        console.error("❌ Plan not found:", planId);
-        return;
+        return next(new AppError("❌ Plan not found", 401));
       }
 
       const user = await User.findById(userId);
       if (!user) {
-        console.error("❌ User not found:", userId);
-        return;
+        return next(new AppError("❌ User not found", 401));
       }
-
-      console.log("Plan:", plan.type, plan.planType);
-      console.log("User:", user.email);
 
       // Check if payment already processed (prevent duplicates)
       const alreadyProcessed = user.paymentHistory?.some(
@@ -95,8 +72,7 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
       );
 
       if (alreadyProcessed) {
-        console.log("⚠️ Payment already processed:", paymentId);
-        return;
+        return next(new AppError("⚠️ Payment already processed", 400));
       }
 
       // Add to payment history
@@ -117,9 +93,6 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
           const creditAmount = parseInt(plan.quantity.match(/\d+/)[0]);
           user.credits = (user.credits || 0) + creditAmount;
           message = `Added ${creditAmount} credits`;
-          console.log(
-            `✅ Added ${creditAmount} credits. Total: ${user.credits}`,
-          );
           break;
 
         case "subscription":
@@ -147,7 +120,6 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
 
           user.credits = 999999;
           message = `${plan.type} subscription activated`;
-          console.log(`✅ Subscription activated: ${plan.type}`);
           break;
 
         case "lifetime":
@@ -165,12 +137,14 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
           user.credits = 999999;
           user.isLifetime = true;
           message = "Lifetime access activated";
-          console.log("✅ Lifetime access activated");
           break;
       }
 
       await user.save({ validateBeforeSave: false });
-      console.log("✅ User updated successfully:", message);
+      res.status(201).json({
+        status: "Success",
+        message,
+      });
     } catch (error) {
       console.error("❌ Webhook processing error:", error);
       console.error("Error stack:", error.stack);
@@ -182,11 +156,11 @@ export const handleRazorpayWebhook = catchAsync(async (req, res) => {
 });
 
 // Manual sync endpoint (backup)
-export const manualSync = catchAsync(async (req, res) => {
+export const manualSync = catchAsync(async (req, res, next) => {
   const { paymentId } = req.body;
 
   if (!paymentId) {
-    return res.status(400).json({ error: "Payment ID required" });
+    return next(new AppError("Payment ID required", 400));
   }
 
   try {
