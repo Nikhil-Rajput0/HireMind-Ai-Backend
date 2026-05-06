@@ -167,15 +167,12 @@ RULES:
   // Get updated user
   const updatedUser = await User.findById(req.user.id);
 
-  const score = calculateATSScore(resumeData);
-
   res.status(200).json({
     success: true,
     data: {
       ...parsed,
       credits: updatedUser.credits,
     },
-    score,
     message:
       updatedUser.isLifetime || updatedUser.subscription?.isActive
         ? "Resume improved (Subscription)"
@@ -187,9 +184,12 @@ export const saveResume = catchAsync(async (req, res) => {
   if (!req.body.user) req.body.user = req.user._id;
   const { resumeData } = req.body;
 
+  const score = calculateATSScore(resumeData);
+
   const resume = await Resume.create({
     user: req.body.user,
     ...resumeData,
+    score,
   });
 
   res.status(201).json({
