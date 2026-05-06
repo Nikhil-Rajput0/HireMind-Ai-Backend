@@ -1,4 +1,3 @@
-// controllers/interviewController.js
 import Interview from "../models/interviewModel.js";
 import User from "../models/userModel.js";
 import AppError from "../utils/appError.js";
@@ -12,99 +11,91 @@ export const generateQuestion = catchAsync(async (req, res, next) => {
     let prompt;
 
     if (interview.interviewType === "hr") {
-      prompt = `You are an expert HR interviewer conducting a ${interview.difficulty} level interview for a ${interview.role} position.
+      prompt = `You are a friendly and professional HR interviewer speaking directly to a candidate.
 
-                Your task: Ask ONE professional HR interview question that:
-                1. Evaluates soft skills and cultural fit
-                2. Assesses communication and problem-solving abilities
-                3. Is appropriate for ${interview.difficulty} level candidates
-                4. Is specific to the ${interview.role} role
+              Start naturally like a real interview (for example: "Tell me about yourself" can be used sometimes).
 
-                Question types to consider:
-                - Behavioral (Tell me about a time when...)
-                - Situational (How would you handle...)
-                - Motivational (Why do you want this role?)
-                - Cultural fit (What's your ideal work environment?)
+              Ask ONE HR interview question for a ${interview.difficulty} level ${interview.role} candidate.
 
-                Format: Return ONLY the question, no explanations or prefixes.
-                Keep the question concise, clear, and professional (2-3 sentences max).`;
+              Guidelines:
+              - Keep it conversational and natural
+              - Focus on behavior, communication, motivation, or cultural fit
+              - Make it feel like a real interviewer speaking in person
+              - Keep it concise (1–2 sentences max)
+
+              Examples of tone:
+              - "Tell me about a time when..."
+              - "How do you usually handle..."
+              - "Why are you interested in..."
+
+              Return ONLY the question. No explanation.`;
     }
 
     if (interview.interviewType === "technical") {
-      prompt = `You are a professional technical interviewer conducting a ${interview.difficulty} level interview for a ${interview.role} position.
+      prompt = `You are a professional technical interviewer having a real conversation with a candidate.
 
-            Your task: Ask ONE conceptual technical interview question.
+            Ask ONE conceptual question for a ${interview.difficulty} level ${interview.role} candidate.
 
-            STRICT RULES:
-            - Do NOT ask the candidate to write code.
-            - Do NOT ask to build or implement anything.
-            - Do NOT say "write a program", "create schema", or "implement".
-            - ONLY ask explanation-based or concept-based questions.
-
-            The question should:
-            1. Test understanding of core ${interview.role} concepts
-            2. Be answerable verbally (like in a real interview)
-            3. Allow explanation, reasoning, and discussion
-            4. Be clear and specific
+            Important:
+            - Do NOT ask to write code
+            - Do NOT ask to implement anything
+            - Ask only explanation-based questions
+            - Make it sound like a real interviewer speaking casually but professionally
 
             ${
               interview.role === "MERN Stack"
                 ? `
             Focus on topics like:
-            - React concepts (hooks, state, lifecycle)
+            - React (hooks, state, lifecycle)
             - Node.js event loop
             - Express middleware
-            - MongoDB relationships & indexing
+            - MongoDB
             - Authentication (JWT)
-            - API design & best practices
-            - Performance optimization
+            - API design
+            - Performance
             `
                 : ""
             }
 
-            ${interview.difficulty === "easy" ? "Ask basic concept questions." : ""}
-            ${interview.difficulty === "medium" ? "Ask scenario-based or real-world questions." : ""}
-            ${interview.difficulty === "hardest" ? "Ask deep conceptual or architecture-level questions." : ""}
+            Difficulty guidance:
+            ${interview.difficulty === "easy" ? "- Ask basic understanding questions." : ""}
+            ${interview.difficulty === "medium" ? "- Ask scenario-based questions." : ""}
+            ${interview.difficulty === "hardest" ? "- Ask deep reasoning or architecture questions." : ""}
 
-            Format:
-            Return ONLY the question.
-            No explanation.
-            No code tasks.
-            Make it sound like a real interviewer speaking.`;
+            Tone examples:
+            - "Can you explain how..."
+            - "What happens when..."
+            - "Why would you choose..."
+
+            Return ONLY the question.`;
     }
 
     if (interview.interviewType === "strict") {
-      prompt = `You are a strict and demanding technical interviewer assessing a ${interview.role} candidate at ${interview.difficulty} level.
+      prompt = `You are a strict and demanding technical interviewer.
 
-                Your task: Ask ONE challenging conceptual question.
+        Ask ONE challenging conceptual question for a ${interview.difficulty} level ${interview.role} candidate.
 
-                STRICT RULES:
-                - Do NOT ask to write code.
-                - Do NOT ask to implement anything.
-                - Do NOT give coding problems.
-                - ONLY ask deep explanation-based questions.
+        Rules:
+        - No coding questions
+        - No implementation tasks
+        - Only deep explanation-based questions
+        - Make it feel like a real high-pressure interview
 
-                The question must:
-                1. Test deep understanding of ${interview.role}
-                2. Require critical thinking
-                3. Include a real-world scenario
-                4. Require reasoning, not coding
+        The question should:
+        - Include a real-world scenario
+        - Test deep understanding
+        - Force the candidate to think critically
 
-                Examples of style:
-                - "Explain how..."
-                - "What would happen if..."
-                - "Why would you choose..."
-                - "How would you handle..."
+        Tone examples:
+        - "Why would you choose..."
+        - "What would happen if..."
+        - "How would you handle..."
 
-                ${interview.difficulty === "easy" ? "Keep it basic but still conceptual." : ""}
-                ${interview.difficulty === "medium" ? "Include real-world scenarios." : ""}
-                ${interview.difficulty === "hardest" ? "Focus on architecture, trade-offs, and edge cases." : ""}
+        ${interview.difficulty === "easy" ? "Keep it simple but still thoughtful." : ""}
+        ${interview.difficulty === "medium" ? "Include realistic scenarios." : ""}
+        ${interview.difficulty === "hardest" ? "Focus on trade-offs, scaling, and edge cases." : ""}
 
-                Format:
-                Return ONLY the question.
-                No explanation.
-                No coding tasks.
-                Make it feel like a real strict interviewer.`;
+        Return ONLY the question.`;
     }
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -175,7 +166,6 @@ export const getAllInterviews = catchAsync(async (req, res, next) => {
   });
 });
 
-// UPDATED: createInterview with credit check
 export const createInterview = catchAsync(async (req, res, next) => {
   if (!req.body.user) req.body.user = req.user.id;
 
