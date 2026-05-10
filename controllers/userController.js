@@ -15,6 +15,7 @@ export const getAllUsers = async (req, res, next) => {
     .populate("interviews")
     .populate("resumes")
     .populate("supports");
+
   res.status(200).json({
     status: "Success",
     results: user.length,
