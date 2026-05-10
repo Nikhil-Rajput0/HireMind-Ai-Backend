@@ -285,6 +285,18 @@ export const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
+export const RestrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You are not restricted to perform these action", 401),
+      );
+    }
+
+    next();
+  };
+};
+
 export const updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
 

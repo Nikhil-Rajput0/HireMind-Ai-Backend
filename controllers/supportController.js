@@ -15,8 +15,10 @@ export const getSupport = catchAsync(async (req, res, next) => {
 
 export const createSupport = catchAsync(async (req, res, next) => {
   const { name, email, phone, message } = req.body;
+  if (!req.body.user) req.body.user = req.user.id;
 
   const newSupport = await Support.create({
+    user: req.body.user,
     name,
     email,
     phone,

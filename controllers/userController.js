@@ -11,7 +11,10 @@ const filterObj = (obj, ...requiredFields) => {
 };
 
 export const getAllUsers = async (req, res, next) => {
-  const user = await User.find().populate("interviews");
+  const user = await User.find()
+    .populate("interviews")
+    .populate("resumes")
+    .populate("supports");
   res.status(200).json({
     status: "Success",
     results: user.length,

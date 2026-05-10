@@ -3,6 +3,12 @@ import validator from "validator";
 
 const supportSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     name: {
       type: String,
       required: [true, "Your Name is required"],

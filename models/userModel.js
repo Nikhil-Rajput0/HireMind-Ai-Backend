@@ -125,6 +125,12 @@ userSchema.virtual("resumes", {
   localField: "_id",
 });
 
+userSchema.virtual("supports", {
+  ref: "Support",
+  foreignField: "User",
+  localField: "_id",
+});
+
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 

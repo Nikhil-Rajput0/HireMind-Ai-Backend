@@ -11,6 +11,7 @@ import {
   login,
   protect,
   resetPassword,
+  RestrictTo,
   sendOtp,
   signUp,
   updatePassword,
@@ -35,6 +36,7 @@ userRouter.patch(
   updateMe,
 );
 
+userRouter.get("allUsers", protect, RestrictTo("admin"), getAllUsers);
 userRouter.patch("/updateCredits", protect, updateCredits);
 userRouter.patch("/updatePassword", protect, updatePassword);
 userRouter.get("/getMe", protect, getMe);
