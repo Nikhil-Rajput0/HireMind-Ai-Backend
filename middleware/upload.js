@@ -18,4 +18,4 @@ const upload = multer({
 
 export const uploadSingleFile = upload.single("photo");
 
-export const uploadPproblemFile = upload.single("problemPhoto");
+export const uploadProblemFile = upload.single("problemPhoto");

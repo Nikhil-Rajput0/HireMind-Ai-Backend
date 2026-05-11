@@ -23,7 +23,7 @@ export const uploadUserPhotoToCloud = (req, res, next) => {
 };
 
 export const uploadUserProblemToCLoud = (req, res, next) => {
-  if (req.file) return next();
+  if (!req.file) return next();
 
   const stream = cloudinary.uploader.upload_stream(
     {
