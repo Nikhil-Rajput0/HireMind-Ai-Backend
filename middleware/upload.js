@@ -17,3 +17,5 @@ const upload = multer({
 });
 
 export const uploadSingleFile = upload.single("photo");
+
+export const uploadPproblemFile = upload.single("problemPhoto");

@@ -3,7 +3,10 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 
 export const getSupport = catchAsync(async (req, res, next) => {
-  const allSupport = await Support.find();
+  const allSupport = await Support.find().populate({
+    path: "user",
+    select: "name photo email",
+  });
 
   res.status(200).json({
     status: "Success",
@@ -14,14 +17,13 @@ export const getSupport = catchAsync(async (req, res, next) => {
 });
 
 export const createSupport = catchAsync(async (req, res, next) => {
-  const { name, email, phone, message } = req.body;
+  const { subject, problemPhoto, message } = req.body;
   if (!req.body.user) req.body.user = req.user.id;
 
   const newSupport = await Support.create({
     user: req.body.user,
-    name,
-    email,
-    phone,
+    subject,
+    problemPhoto,
     message,
   });
 
