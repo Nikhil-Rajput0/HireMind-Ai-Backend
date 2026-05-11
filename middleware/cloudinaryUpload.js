@@ -36,6 +36,7 @@ export const uploadUserProblemToCLoud = (req, res, next) => {
       if (error) return next(error);
 
       req.body.problemPhoto = result.secure_url;
+      next();
     },
   );
 
