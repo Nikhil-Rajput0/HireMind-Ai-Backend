@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetTokenExpires: Date,
 
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+
     subscription: {
       plan: {
         type: mongoose.Schema.ObjectId,
