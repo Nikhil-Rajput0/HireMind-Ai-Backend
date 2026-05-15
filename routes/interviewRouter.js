@@ -5,7 +5,7 @@ import {
   evaluateAnswer,
   finishInterview,
   generateQuestion,
-  getAllInterviews,
+  getAllInterview,
   getInterviewById,
   saveAnswer,
 } from "../controllers/interviewController.js";
@@ -18,6 +18,6 @@ interviewRouter.post("/question", generateQuestion);
 interviewRouter.post("/evaluate", evaluateAnswer);
 interviewRouter.post("/save", saveAnswer);
 interviewRouter.post("/finish", finishInterview);
-interviewRouter.get("/getAllInterviews", getAllInterviews);
+interviewRouter.get("/getAllInterviews", getAllInterview);
 interviewRouter.get("/:id", getInterviewById);
 interviewRouter.delete("/:id", deleteOneInterview);

@@ -155,17 +155,6 @@ export const evaluateAnswer = catchAsync(async (req, res, next) => {
   }
 });
 
-export const getAllInterviews = catchAsync(async (req, res, next) => {
-  const allInterviews = await Interview.find();
-  res.status(200).json({
-    status: "success",
-    result: allInterviews.length,
-    data: {
-      interview: allInterviews,
-    },
-  });
-});
-
 export const createInterview = catchAsync(async (req, res, next) => {
   if (!req.body.user) req.body.user = req.user.id;
 
@@ -294,5 +283,18 @@ export const deleteOneInterview = catchAsync(async (req, res, next) => {
   return res.status(204).json({
     status: "success",
     message: "Interview Deleted",
+  });
+});
+
+export const getAllInterview = catchAsync(async (req, res, next) => {
+  const interviews = await Interview.find().populate({
+    path: "user",
+    select: "name email",
+  });
+
+  res.status(200).json({
+    status: "success",
+    result: interviews.length,
+    interviews,
   });
 });

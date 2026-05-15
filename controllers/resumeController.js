@@ -216,3 +216,15 @@ export const deleteResume = catchAsync(async (req, res) => {
     message: "Resume deleted successfully",
   });
 });
+
+export const getAllResumes = catchAsync(async (req, res, next) => {
+  const resumes = await Resume.find().populate({
+    path: "user",
+    select: "name photo email",
+  });
+
+  res.status(200).json({
+    status: "success",
+    resumes,
+  });
+});

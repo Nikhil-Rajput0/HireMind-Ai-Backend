@@ -3,6 +3,7 @@ import { protect } from "../controllers/authController.js";
 import {
   deleteResume,
   generateResume,
+  getAllResumes,
   getMyResumes,
   saveResume,
 } from "../controllers/resumeController.js";
@@ -16,6 +17,7 @@ resumeRouter.post("/generate", protect, generateResume);
 resumeRouter.post("/save", protect, saveResume);
 resumeRouter.get("/myResume/:id", getMyResumes);
 resumeRouter.delete("/:id", deleteResume);
+resumeRouter.delete("/allResumes", getAllResumes);
 
 resumeRouter.post("/analyze", uploadResume, analyzeResume);
 

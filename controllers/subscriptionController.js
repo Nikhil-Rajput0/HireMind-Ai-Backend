@@ -3,7 +3,10 @@ import AppError from "../utils/appError.js";
 import Plan from "../models/subscriptionModel.js";
 
 export const getSubscription = catchAsync(async (req, res, next) => {
-  const plans = await Plan.find();
+  const plans = await Plan.find().populate({
+    path: "user",
+    select: "name photo email",
+  });
 
   if (!plans) {
     return next(new AppError("There is no plan in databse", 404));
