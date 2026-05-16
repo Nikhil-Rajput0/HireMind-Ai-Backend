@@ -224,9 +224,9 @@ export const getAllResumes = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   resume = resume.skip(skip).limit(limit);
-
+  let numResume;
   if (req.query.page) {
-    const numResume = await Resume.countDocuments();
+    numResume = await Resume.countDocuments();
     if (skip >= numResume) return next(new AppError("There is no resume", 404));
   }
 
@@ -238,6 +238,7 @@ export const getAllResumes = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     results: resumes.length,
+    numResume,
     resumes,
   });
 });
