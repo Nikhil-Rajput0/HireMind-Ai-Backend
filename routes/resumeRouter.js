@@ -17,7 +17,7 @@ resumeRouter.post("/generate", protect, generateResume);
 resumeRouter.post("/save", protect, saveResume);
 resumeRouter.get("/myResume/:id", getMyResumes);
 resumeRouter.delete("/:id", deleteResume);
-resumeRouter.delete("/allResumes", getAllResumes);
+resumeRouter.get("/allResumes", getAllResumes);
 
 resumeRouter.post("/analyze", uploadResume, analyzeResume);
 
