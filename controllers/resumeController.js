@@ -218,7 +218,6 @@ export const deleteResume = catchAsync(async (req, res) => {
 });
 
 export const getAllResumes = catchAsync(async (req, res, next) => {
-  //pagination
   let resume = Resume.find();
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 100;
@@ -228,7 +227,7 @@ export const getAllResumes = catchAsync(async (req, res, next) => {
 
   if (req.query.page) {
     const numResume = await Resume.countDocuments();
-    if (skip >= numResume) return;
+    if (skip >= numResume) return next(new AppError("There is no resume", 404));
   }
 
   const resumes = await resume.populate({
