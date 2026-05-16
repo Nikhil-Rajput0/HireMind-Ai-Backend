@@ -4,6 +4,7 @@ import groq from "../utils/groq.js";
 import { calculateATSScore } from "../utils/atsScore.js";
 import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 export const generateResume = catchAsync(async (req, res) => {
   const { resume } = req.body;
@@ -218,19 +219,12 @@ export const deleteResume = catchAsync(async (req, res) => {
 });
 
 export const getAllResumes = catchAsync(async (req, res, next) => {
-  let resume = Resume.find();
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 100;
-  const skip = (page - 1) * limit;
+  const features = new ApiFeatures(Resume.find(), req.query)
+    .filter()
+    .sort()
+    .paginate();
 
-  resume = resume.skip(skip).limit(limit);
-  let numResume;
-  if (req.query.page) {
-    numResume = await Resume.countDocuments();
-    if (skip >= numResume) return next(new AppError("There is no resume", 404));
-  }
-
-  const resumes = await resume.populate({
+  const resumes = await features.query.populate({
     path: "user",
     select: "name photo email",
   });
@@ -238,7 +232,6 @@ export const getAllResumes = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     results: resumes.length,
-    numResume,
     resumes,
   });
 });

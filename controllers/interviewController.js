@@ -1,5 +1,6 @@
 import Interview from "../models/interviewModel.js";
 import User from "../models/userModel.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
 import groq from "../utils/groq.js";
@@ -287,7 +288,12 @@ export const deleteOneInterview = catchAsync(async (req, res, next) => {
 });
 
 export const getAllInterview = catchAsync(async (req, res, next) => {
-  const interviews = await Interview.find().populate({
+  const features = new ApiFeatures(Interview.find(), req.query)
+    .filter()
+    .sort()
+    .paginate();
+
+  const interviews = await features.query.populate({
     path: "user",
     select: "name email photo",
   });
