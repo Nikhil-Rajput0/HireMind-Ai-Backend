@@ -288,6 +288,8 @@ export const deleteOneInterview = catchAsync(async (req, res, next) => {
 });
 
 export const getAllInterview = catchAsync(async (req, res, next) => {
+  const numInterview = await Interview.countDocuments();
+
   const features = new ApiFeatures(Interview.find(), req.query)
     .filter()
     .sort()
@@ -301,6 +303,7 @@ export const getAllInterview = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     result: interviews.length,
+    numInterview,
     interviews,
   });
 });
