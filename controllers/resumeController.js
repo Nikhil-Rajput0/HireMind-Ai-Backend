@@ -219,6 +219,8 @@ export const deleteResume = catchAsync(async (req, res) => {
 });
 
 export const getAllResumes = catchAsync(async (req, res, next) => {
+  const numResume = await Resume.countDocuments();
+
   const features = new ApiFeatures(Resume.find(), req.query)
     .filter()
     .sort()
@@ -232,6 +234,7 @@ export const getAllResumes = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     results: resumes.length,
+    numResume,
     resumes,
   });
 });
