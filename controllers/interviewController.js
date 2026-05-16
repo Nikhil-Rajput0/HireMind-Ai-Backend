@@ -289,7 +289,7 @@ export const deleteOneInterview = catchAsync(async (req, res, next) => {
 export const getAllInterview = catchAsync(async (req, res, next) => {
   const interviews = await Interview.find().populate({
     path: "user",
-    select: "name email",
+    select: "name email photo",
   });
 
   res.status(200).json({

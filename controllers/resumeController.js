@@ -218,13 +218,27 @@ export const deleteResume = catchAsync(async (req, res) => {
 });
 
 export const getAllResumes = catchAsync(async (req, res, next) => {
-  const resumes = await Resume.find().populate({
+  //pagination
+  let resume = Resume.find();
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 100;
+  const skip = (page - 1) * limit;
+
+  resume = resume.skip(skip).limit(limit);
+
+  if (req.query.page) {
+    const numResume = await Resume.countDocuments();
+    if (skip >= numResume) return;
+  }
+
+  const resumes = await resume.populate({
     path: "user",
     select: "name photo email",
   });
 
   res.status(200).json({
     status: "success",
+    results: resumes.length,
     resumes,
   });
 });
