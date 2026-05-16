@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import AppError from "../utils/appError.js";
 import catchAsync from "../utils/catchAsync.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 const filterObj = (obj, ...requiredFields) => {
   const reqObj = {};
@@ -11,7 +12,13 @@ const filterObj = (obj, ...requiredFields) => {
 };
 
 export const getAllUsers = async (req, res, next) => {
-  const user = await User.find()
+  const numTotal = await User.countDocuments();
+  const features = new ApiFeatures(User.find(), req.query)
+    .filter()
+    .sort()
+    .paginate();
+
+  const user = await features.query
     .populate("interviews")
     .populate("resumes")
     .populate("supports");
@@ -19,6 +26,7 @@ export const getAllUsers = async (req, res, next) => {
   res.status(200).json({
     status: "Success",
     results: user.length,
+    numTotal,
     user,
   });
 };
