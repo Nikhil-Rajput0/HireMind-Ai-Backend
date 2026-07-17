@@ -1,35 +1,30 @@
-import nodemailer from "nodemailer";
+import Brevo from "@getbrevo/brevo";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const apiInstance = new Brevo.TransactionalEmailsApi();
+
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY,
+);
 
 const sendOTP = async (email, otp) => {
-  const mailOptions = {
-    from: `"HireMind AI" <${process.env.EMAIL_FROM}>`,
-    to: email,
-    subject: `Your HireMind AI Verification Code - ${otp}`,
+  try {
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
-    text: `
-Welcome to HireMind AI!
+    sendSmtpEmail.sender = {
+      name: "HireMind AI",
+      email: process.env.EMAIL_FROM,
+    };
 
-Your verification code is: ${otp}
+    sendSmtpEmail.to = [
+      {
+        email,
+      },
+    ];
 
-This code expires in 5 minutes.
+    sendSmtpEmail.subject = `Your HireMind AI Verification Code - ${otp}`;
 
-If you didn't request this code, simply ignore this email.
-
-Regards,
-HireMind AI
-    `,
-
-    html: `
+    sendSmtpEmail.htmlContent = `
 <!DOCTYPE html>
 <html>
 <body style="margin:0;background:#f7fafc;font-family:Arial,sans-serif;">
@@ -38,10 +33,12 @@ HireMind AI
 <tr>
 <td align="center">
 
-<table width="560" cellpadding="0" cellspacing="0" style="background:white;border-radius:10px;margin:30px auto;">
+<table width="560" cellpadding="0" cellspacing="0"
+style="background:white;border-radius:10px;margin:30px auto;">
 
 <tr>
-<td style="background:#15803d;padding:30px;color:white;font-size:28px;font-weight:bold;">
+<td style="background:#15803d;padding:30px;color:white;
+font-size:28px;font-weight:bold;">
 HireMind AI
 </td>
 </tr>
@@ -54,23 +51,42 @@ Thank you for registering.
 </p>
 
 <p style="font-size:16px;color:#444;">
-Use the OTP below to verify your account.
+Use the verification code below:
 </p>
 
-<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:25px;text-align:center;margin:30px 0;">
+<div style="
+background:#f0fdf4;
+border:2px solid #22c55e;
+border-radius:10px;
+padding:25px;
+text-align:center;
+margin:30px 0;">
 
 <div style="font-size:13px;color:#166534;font-weight:bold;">
 Verification Code
 </div>
 
-<div style="font-size:40px;font-family:monospace;color:#15803d;font-weight:bold;letter-spacing:8px;">
+<div style="
+font-size:40px;
+font-family:monospace;
+color:#15803d;
+font-weight:bold;
+letter-spacing:8px;">
+
 ${otp}
-</div>
 
 </div>
 
-<p style="background:#fefce8;padding:15px;border-radius:8px;color:#854d0e;">
-⏰ This OTP expires in <strong>5 minutes</strong>.
+</div>
+
+<p style="
+background:#fefce8;
+padding:15px;
+border-radius:8px;
+color:#854d0e;">
+
+⏰ This code expires in <strong>5 minutes</strong>.
+
 </p>
 
 <hr>
@@ -83,8 +99,15 @@ If you didn't request this email, simply ignore it.
 </tr>
 
 <tr>
-<td style="background:#f7fafc;padding:20px;text-align:center;font-size:12px;color:#999;">
-© 2026 HireMind AI. All rights reserved.
+<td style="
+background:#f7fafc;
+padding:20px;
+text-align:center;
+font-size:12px;
+color:#999;">
+
+© 2026 HireMind AI
+
 </td>
 </tr>
 
@@ -92,19 +115,34 @@ If you didn't request this email, simply ignore it.
 
 </td>
 </tr>
+
 </table>
 
 </body>
 </html>
-`,
-  };
+`;
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("✅ OTP sent successfully:", email);
+    sendSmtpEmail.textContent = `
+Welcome to HireMind AI
+
+Your verification code is:
+
+${otp}
+
+This code expires in 5 minutes.
+`;
+
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+    console.log("✅ OTP Sent");
+    console.log(response.body);
+
     return true;
   } catch (error) {
-    console.error("Brevo Error:", error);
+    console.error("Brevo API Error:");
+
+    console.error(error.response?.body || error);
+
     throw new Error("Failed to send verification email.");
   }
 };
