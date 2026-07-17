@@ -75,7 +75,7 @@ RULES:
 `;
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "openai/gpt-oss-120b",
     messages: [{ role: "user", content: prompt }],
   });
 

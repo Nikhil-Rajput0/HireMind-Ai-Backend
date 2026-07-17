@@ -99,7 +99,7 @@ export const generateQuestion = catchAsync(async (req, res, next) => {
         Return ONLY the question.`;
     }
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "user",
@@ -133,7 +133,7 @@ export const evaluateAnswer = catchAsync(async (req, res, next) => {
   `;
 
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-120b",
       messages: [
         {
           role: "user",
